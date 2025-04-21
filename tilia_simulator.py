@@ -3,6 +3,19 @@ import pandas as pd
 import openpyxl
 import streamlit as st
 import os, sys
+import load_workbook
+
+def safe_update_excel(path, new_data, sheet_name):
+    wb = load_workbook(path, data_only=False, keep_vba=True)  # Set keep_vba=True if needed
+    ws = wb[sheet_name]
+
+    for idx, row in new_data.iterrows():
+        for col_idx, col_name in enumerate(row.index):
+            cell = ws.cell(row=idx+2, column=col_idx+1)
+            if not (isinstance(cell.value, str) and cell.value.startswith('=')):
+                cell.value = row[col_name]
+
+    wb.save(path)
 
 # --- Load Excel tables ---
 base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
@@ -218,19 +231,12 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --- Buttons Side-by-Side with Reduced Space ---
 col1, spacer, col2 = st.columns([0.4, 0.05, 2])  # Adjust spacer to reduce gap
 
-if st.button("Save Changes", key="save_changes"):
+if st.button("Save Changes"):
     try:
-        # Save user inputs to the workbook directly using openpyxl
-        for idx, row in new_data.iterrows():
-            for col_idx, col_name in enumerate(df_input.columns):
-                cell = sheet.cell(row=idx+2, column=col_idx+1)
-                new_value = row[col_name]
-                cell.value = new_value
-        wb.save(excel_path)
-        st.success("Changes saved to Excel successfully!")
-
+        safe_update_excel(excel_path, new_data, sheet_name="User Guide")
+        st.success("Changes saved successfully without overwriting formulas.")
     except Exception as e:
-        st.error(f"An error occurred while saving: {e}")
+        st.error(f"Error: {e}")
 
 if st.button("Show Results:", key="show_results"):
     df_output1 = load_output(1)
