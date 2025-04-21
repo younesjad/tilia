@@ -220,16 +220,13 @@ col1, spacer, col2 = st.columns([0.4, 0.05, 2])  # Adjust spacer to reduce gap
 
 if st.button("Save Changes", key="save_changes"):
     try:
-        # Close the workbook if it was opened earlier (optional depending on your flow)
-        # wb.close()  # only if wb was opened and used elsewhere
-
-        # Use a temporary Excel App instance for calculations and saving
-        with xw.App(visible=False) as app:
-            wb_excel = app.books.open(excel_path)
-            wb_excel.app.calculate()
-            wb_excel.save()
-            wb_excel.close()
-        
+        # Save user inputs to the workbook directly using openpyxl
+        for idx, row in new_data.iterrows():
+            for col_idx, col_name in enumerate(df_input.columns):
+                cell = sheet.cell(row=idx+2, column=col_idx+1)
+                new_value = row[col_name]
+                cell.value = new_value
+        wb.save(excel_path)
         st.success("Changes saved to Excel successfully!")
 
     except Exception as e:
