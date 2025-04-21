@@ -3,7 +3,7 @@ import pandas as pd
 import openpyxl
 import streamlit as st
 import os, sys
-import load_workbook
+from openpyxl import load_workbook
 
 def safe_update_excel(path, new_data, sheet_name):
     wb = load_workbook(path, data_only=False, keep_vba=True)  # Set keep_vba=True if needed
